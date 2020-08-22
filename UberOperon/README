@@ -1,0 +1,102 @@
+Compile
+mkdir build; cd build
+cmake ..
+make
+
+USAGE
+-----------------
+Unix
+	./GOST ../data_test/ Escherichia_coli_K12 /usr/local/bin/
+Windows
+	./GOST ..\data_test\Escherichia_coli_K12.gi.operon ..\data_test\NC_000853.gi.operon ..\data_test\NC_000853.out ..\output\NC_000853.RBH ..\output\NC_000853.GOST ..\output\NC_000853.RBHGOST ..\output\NC_000853.NEW
+-----------------
+Version 1
+changelog
+1. we change line 322-353 in dynGraph.cpp so that we will not omit some edges. - 05.23.2010
+2. we adjust mcl (line 395 in mclGraph.cpp) so that we can get uberoperons. 06.01.2010
+3. MAX_OPERON 2000 to 7000   04.16.2010
+4. MAX_E_W    4000 to 35000   04.16.2010
+
+Brief Description
+-----------------
+The GOST program is the program to detect ortholog gene sets in microbial genomes.
+It was developed by Computational Systems Biolology Lab (CSBL) at University of Georgia.
+
+Reference
+----------
+
+Input Data Needed:
+-----------------
+1. Thress types of input data:
+
+a). predicted operon data (genomeName.gi.operon)
+format: (operon id: a list of gene ids)
+1: gene_id1 gene_id2 gene_id3 gene_id4
+2: gene_id5 gene_id6
+3: gene_id7 gene_id8 gene_id9 gene_id10
+
+b). homologous gene data from the reference genome (genomeName.out)
+format: (geneid from target genome: a list of corresponding homologous genes in a reference genome)
+e.g.:
+16127996: (17935484,5e-13,3e-13)        (17937867,6e-38,4e-35)
+16127998: (17934697,6e-52,3e-50)
+16128003: (17934541,6e-11,0.003)
+16127996, 16127998, 16128003 are gene ids from the target genome.
+(17935484,5e-13,3e-13) are gene information from the reference genome.
+
+c). detailed gene information of genomes (genomeName.ptt)
+
+e.g.:
+Escherichia coli K12, complete genome - 0..4639675
+4242 proteins
+Location        Strand  Length  PID     Gene    Synonym Code    COG     Product
+190..255        +       21      16127995        thrL    b0001   -       -       thr operon leader peptide
+
+All three input data must be available for the program to run.
+Formats must be EXACTLY SAME as the format mentioned above.
+
+An example of data have been provided for predicting orthologs of Escherichia coli K12.
+There are totally 91 genome dataset. each genome contains gene information (genomeName.ptt),
+predicted operon information by VIMSS (genomeName.gi.operon) and related homogolous gene data
+of genome Escherichia coli K12 against each of 91 genomes (genomeName.out).
+
+Command to Run Program
+------------------------
+There are 5 directories in the program:
+1). src: where the source code stored. 
+         type 'make' should let the program be compiled.
+2). bin: where the executable program stores (UberPredictor)
+         note: copied from src after finish compiling.
+3). data: where the input stored, you might create whatever directory to store your data.
+4). outputs: where the intermediate outputs stored, usually used for detailed investivation.
+5). finalResults: where the final results stored, although it contains a variety of detailed outputs.
+
+The general command for running the program (running in the bin directory):
+./UberPredictor dataDirectory targetGenomeName mclDir
+
+e.g.:
+   ./GOST ../data/ Escherichia_coli_K12 /usr/local/bin/
+
+   note: mcl directory can be omitted if you already set your bin in your set up file.
+         the last argument 'mclDir' is just tell where the 'mcl' executable is.
+         Also, please add '/' at the end of the specified data directory and mclDir.
+         Otherwise the program will complain that it cannot find the files. 
+
+Note:
+1). Directory 'outputs' and 'finalResults' should not be deleted since the program will store all results
+    in these two folders. However, the results under these two folders can be deleted.
+2). program must be run in the bin directory after compiling and cp the program into 'bin' directory.
+
+Important prediction outputs from finalResults directory: 
+-----------------------------------------------------------
+genomeName.UBER_wt1_cst30_I5.0_0 - 
+         file with the final uberoperons, one line is one
+         uber-operon, which is a set of operons. operons are given as 
+         operon ids in the original genomeName.gi.operon file.
+         (as shown in http://csbl.bmb.uga.edu/uber)
+
+genomeName.UBER_wt1_cst30_I5.0_3 -
+         file with the final uberoperons, but with detailed information annotated.
+         the information includes gene id, related gene function for each operon, etc.
+
+Just test

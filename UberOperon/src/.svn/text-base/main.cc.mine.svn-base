@@ -1,0 +1,122 @@
+/* Author: Qin Ma <maqin@csbl.bmb.uga.edu>, May. 10, 2010
+* Usage: the main process of the project
+*/
+
+#include "../include/edge_file_reader.h"
+#include "../include/edge_set_matrix.h"
+#include "../include/matching_file_writer.h"
+#include "../include/operon_dynamic_graph.h"
+#include "../include/operons_in_genome.h"
+#include "../include/rbh.h"
+
+template<typename gene_t> Rbh<gene_t, double> BipartiteGraphRbhMerger<gene_t>::rbh_;
+template<typename gene_t> std::map<gene_pair_t, WeightPair> BipartiteGraphCloseRbhMerger<gene_t>::reader_;
+
+const char* SetFileName(const int argc, char* argv[], const int i, const char* default_filename) {
+  return (argc > i) ? argv[i] : default_filename;
+}
+
+void Push(const std::map<OperonId, std::pair<std::set<OperonId>, std::set<OperonId> > >& gost_edge, std::map<OperonId, std::map<OperonId, int> >* gost_second_edge_pointer) {
+  for (std::map<OperonId, std::pair<std::set<OperonId>, std::set<OperonId> > >::const_iterator it = gost_edge.begin(); it != gost_edge.end(); it++) {
+    const std::set<OperonId>& set = it->second.first;
+    if (set.size() == 1) {
+      (*gost_second_edge_pointer)[*set.begin() + 1][*set.begin() + 1]++;
+      continue;
+    }
+    for (std::set<OperonId>::const_iterator jt = set.begin(); jt != set.end(); jt++) {
+      std::set<OperonId>::const_iterator kt = jt;
+      for (kt++; kt != it->second.first.end(); kt++) {
+        (*gost_second_edge_pointer)[*jt + 1][*kt + 1]++;
+        (*gost_second_edge_pointer)[*kt + 1][*jt + 1]++;
+      }
+    }
+  }
+}
+
+
+int main(int argc, char *argv[]) {
+#ifdef _DEBUG
+  fprintf(stderr, "Are you sure run this program in the SLOW debug mode?");
+#endif
+
+  const std::string kUsage = "Usage: %s <FileU> <FileV> <File_Edge> <RBH_File(out)> <GOST_File(out)> <GOST_Edge_File_U(out)> <GOST_Edge_File_V(out)> <RBH_GOST_File(out)> <NEW_RBH_GOST_File(out)>\n";  // ..\data_test\Escherichia_coli_K12.gi.operon ..\data_test\NC_004463.gi.operon ..\data_test\NC_004463.out ..\output\NC_004463.RBH ..\output\NC_004463.GOST ..\output\NC_004463.GOST.U ..\output\NC_004463.GOST.V ..\output\NC_004463.RBHGOST ..\output\NC_004463.NEW & $(SolutionDir)$(Configuration)\$(ProjectName) ..\data_test\Escherichia_coli_K12.gi.operon ..\data_test\NC_000853.gi.operon ..\data_test\NC_000853.out ..\output\NC_000853.RBH ..\output\NC_000853.GOST ..\output\NC_000853.GOST.U ..\output\NC_000853.GOST.V ..\output\NC_000853.RBHGOST ..\output\NC_000853.NEW & "C:\Program Files (x86)\WinMerge\WinMergeU.exe" ..\output ..\finalResults
+
+  printf ("%d\n",argc);
+#pragma region init
+  const int file_num = 1;
+  const char* file_u              = SetFileName(argc, argv, 1, "../data_test/Escherichia_coli_K12.gi.operon");
+  const char* file_v[file_num];
+  file_v[0]                       = SetFileName(argc, argv, 2, "../data_test/NC_004463.gi.operon");
+  file_v[1]                       =                            "../data_test/NC_000853.gi.operon";
+  const char* edge_file[file_num];
+  edge_file[0]                    = SetFileName(argc, argv, 3, "../data_test/NC_004463.out");
+  edge_file[1]                    =                            "../data_test/NC_000853.out";
+  const char* gost_file[file_num];
+  gost_file[0]                    = SetFileName(argc, argv, 5, "../output/NC_000913_NC_004463.gost");
+  gost_file[1]                    =                            "../output/NC_000913_NC_000853.gost";
+  const char* gost_edge_file_u[file_num];
+  gost_edge_file_u[0]             = SetFileName(argc, argv, 6, "../output/NC_000913_NC_004463.gost.u");
+  gost_edge_file_u[1]             =                            "../output/NC_000913_NC_000853.gost.u";
+  const char* gost_edge_file_v[file_num];
+  gost_edge_file_v[0]             = SetFileName(argc, argv, 7, "../output/NC_000913_NC_004463.gost.v");
+  gost_edge_file_v[1]             =                            "../output/NC_000913_NC_000853.gost.v";
+//#ifdef RBH
+  const char* rbh_file[file_num];
+  rbh_file[0]                     = SetFileName(argc, argv, 4, "../output/NC_000913_NC_004463.rbh");
+  rbh_file[1]                     =                            "../output/NC_000913_NC_000853.rbh";
+  const char* gost_rbh_file[file_num];
+  gost_rbh_file[0]                = SetFileName(argc, argv, 8, "../output/NC_000913_NC_004463.gost.rbh");
+  gost_rbh_file[1]                =                            "../output/NC_000913_NC_000853.gost.rbh";
+  const char* gost_rbh_close_file[file_num];
+  gost_rbh_close_file[0]          = SetFileName(argc, argv, 9, "../output/NC_000913_NC_004463.gost.rbh.new");
+  gost_rbh_close_file[1]          =                            "../output/NC_000913_NC_000853.gost.rbh.new";
+//#endif
+  const char* gost_rich_edge_file =                            "../output/NC_000913.gost.mci";
+#pragma endregion init
+
+  printf ("%d\n",argc);
+  OperonsGenes operons_u;
+  file_handler::ReadOperonFile(file_u, &operons_u);
+  std::map<OperonId, std::map<OperonId, int> > gost_second_edge_map;
+  for (int i= 0; i < file_num; i++) {
+    OperonsGenes operons_v;
+    file_handler::ReadOperonFile(file_v[i], &operons_v);
+    std::map<gene_pair_t, WeightPair> reader;
+    edge_file_reader::Read(edge_file[i], 0.001, &reader);
+
+    OperonDynamicGraph<BipartiteGraphMerger<gene_t> > dynamic_graph(reader, operons_u, operons_v);
+    //dynamic_graph.Init(true, true);
+    //std::set<gene_pair_t> gost_gp;
+    //dynamic_graph.GetGenePairSet(&gost_gp);
+    //file_handler::WriteMatchingFile(reader, gost_gp, gost_file[i]);
+
+    std::map<OperonId, std::pair<std::set<OperonId>, std::set<OperonId> > > gost_edge;
+    dynamic_graph.GetEdgeSet(&gost_edge);
+    //Push(gost_edge, &gost_second_edge_map);
+    //file_handler::WriteEdgeFiles(gost_edge, gost_edge_file_u[i], gost_edge_file_v[i]);
+
+//#if 1
+    BipartiteGraphRbhMerger<gene_t>::rbh_.LoadMap(reader);
+    BipartiteGraphRbhMerger<gene_t>::rbh_.Init();
+    std::set<gene_pair_t> rbh_gp;
+    BipartiteGraphRbhMerger<gene_t>::rbh_.SaveGenePairSet(&rbh_gp);
+    file_handler::WriteMatchingFile(reader, rbh_gp, rbh_file[i]);
+
+    OperonDynamicGraph<BipartiteGraphRbhMerger<gene_t> > dynamic_graph_rbh(reader, operons_u, operons_v);
+    dynamic_graph_rbh.Init(true, true);
+    std::set<gene_pair_t> gost_rbh_gp;
+    dynamic_graph_rbh.GetGenePairSet(&gost_rbh_gp);
+    //file_handler::WriteMatchingFile(reader, gost_rbh_gp, gost_rbh_file[i]);
+    file_handler::WriteMatchingFile(reader, gost_rbh_gp, gost_file[i]);
+
+    //BipartiteGraphCloseRbhMerger<gene_t>::reader_ = reader;
+    //OperonDynamicGraph<BipartiteGraphCloseRbhMerger<gene_t> > dynamic_graph_close_rbh(reader, operons_u, operons_v);
+    //dynamic_graph_close_rbh.Init(false, true);
+    //std::set<gene_pair_t> gost_rbh_close_gp;
+    //dynamic_graph_close_rbh.GetGenePairSet(&gost_rbh_close_gp);
+    //file_handler::WriteMatchingFile(reader, gost_rbh_close_gp, gost_rbh_close_file[i]);
+//#endif
+    printf("Finish Reference file: %s\n", file_v[i]);
+  }
+  //file_handler::WriteRichEdgeFile(gost_second_edge_map, gost_rich_edge_file);
+}

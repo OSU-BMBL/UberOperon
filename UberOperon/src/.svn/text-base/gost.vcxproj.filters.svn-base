@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="include">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="res">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cc">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="edge_set_matrix.cc">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="operons_in_genome.cc">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="edge_file_reader.cc">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="matching_file_writer.cc">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README" />
+    <None Include="CMakeLists.txt" />
+    <None Include="gost.cmd" />
+    <None Include="..\data_test\NC_000853.gi.operon">
+      <Filter>res</Filter>
+    </None>
+    <None Include="..\data_test\NC_000853.out">
+      <Filter>res</Filter>
+    </None>
+    <None Include="..\data_test\Escherichia_coli_K12.gi.operon">
+      <Filter>res</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\bipartite_graph.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\edge_file_reader.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\edge_set_matrix.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\edge_weight.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gene_set_type.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\matching_file_writer.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\mcl.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\operon_dynamic_graph.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\operon_gene.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\operons_in_genome.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\rbh.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\set_pair_calc.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\vertix_with_weight.h">
+      <Filter>include</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
